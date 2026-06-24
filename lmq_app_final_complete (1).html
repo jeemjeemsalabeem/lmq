@@ -1,0 +1,950 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LeanMeanQueen</title>
+    <link rel="apple-touch-icon" href="lmq-icon.png">
+    <link rel="icon" type="image/png" href="lmq-icon.png">
+    <meta name="theme-color" content="#d4af37">
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Monoton&family=Black+Ops+One&family=Orbitron:wght@400;700;900&family=Lilita+One&family=Righteous&family=Bebas+Neue&family=Space+Mono:wght@400;700&family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+            min-height: 100vh;
+            padding-bottom: 80px;
+        }
+        
+        #root {
+            min-height: 100vh;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateY(-100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        const LeanMeanQueenApp = () => {
+            const TIPS = [
+                "Good form beats heavy weights",
+                "Consistency creates breakthroughs",
+                "You're stronger than you think",
+                "Every rep is a win",
+                "Your body is a work of art—build it your way",
+                "Rest is not laziness, it's strategy",
+                "Strength ripples through life",
+                "Feel the muscle work, not just move the weight",
+                "Slow and controlled beats fast and sloppy",
+                "You're not competing with anyone in this gym but yesterday's you",
+                "Joints and ligaments need love too—respect the process",
+                "Women build strength differently—and that's powerful",
+                "Progressive overload: the tortoise wins",
+                "Bone density today = independence tomorrow",
+                "Soreness is not the goal—strength is",
+                "Control the descent; the weight does the lifting",
+                "Your nervous system needs training too",
+                "Small wins compound into big changes",
+                "A hard set done right beats 10 sets done wrong",
+                "You belong in this gym exactly as you are",
+                "Breathing is part of the lift",
+                "Mind-muscle connection > ego lifting",
+                "Recovery is when you actually get stronger",
+                "This is your time. Protect it",
+                "Muscles remember what you teach them",
+                "Strength is confidence in motion",
+                "Every workout writes your future",
+                "Pain-free movement is the real goal",
+                "You're investing in your 80-year-old self right now",
+                "Form first, weight second, ego nowhere",
+                "This is a conversation with your body—listen",
+                "Lift like nobody's watching",
+                "Strong women lift each other up",
+                "Your goal is not to look like someone else",
+                "Patience builds more muscle than intensity",
+                "Fatigue is not failure; it's feedback",
+                "You're literally building yourself stronger",
+                "A plateau is just a springboard",
+                "Consistency over perfection, every single time",
+                "This is self-love in motion",
+                "Your joints will thank you in 20 years",
+                "The hardest part is showing up",
+                "Small increments add up to big transformations",
+                "You're not 'trying'—you ARE getting in shape",
+                "Strength compounds like interest",
+                "This is meditative. Be here",
+                "Your muscles grow in the kitchen and gym",
+                "You don't have to be perfect",
+                "This is the only body you get",
+                "Every rep is a vote for the woman you want to become"
+            ];
+
+            const WORKOUTS = {
+                'A': {
+                    name: 'Lower + Push Day',
+                    exercises: [
+                        { name: 'Leg Press', sets: 3, reps: '12-15', defaultWeight: 100, notes: 'Warm-up light first' },
+                        { name: 'Dumbbell Goblet Squats', sets: 3, reps: '12-15', defaultWeight: 15, notes: 'Full range of motion' },
+                        { name: 'Dumbbell Bench Press', sets: 3, reps: '12-15', defaultWeight: 10, notes: 'Controlled descent' },
+                        { name: 'Cable Chest Press', sets: 3, reps: '12-15', defaultWeight: 35, notes: 'Full extension' },
+                        { name: 'Cable Tricep Pushdown', sets: 3, reps: '12-15', defaultWeight: 30, notes: 'Light weight, slow' },
+                        { name: 'Glute Bridges', sets: 3, reps: '12-15', defaultWeight: 'BW', notes: 'Squeeze at top' }
+                    ]
+                },
+                'B': {
+                    name: 'Upper + Pull Day',
+                    exercises: [
+                        { name: 'Lat Pulldown', sets: 3, reps: '12-15', defaultWeight: 60, notes: 'Control the descent' },
+                        { name: 'Mid Row Machine', sets: 3, reps: '12-15', defaultWeight: 65, notes: 'Pull to chest' },
+                        { name: 'Dumbbell Rows', sets: 3, reps: '12-15', defaultWeight: 15, notes: 'Squeeze scapula' },
+                        { name: 'Dumbbell Shoulder Press', sets: 3, reps: '12-15', defaultWeight: 10, notes: 'Neutral grip' },
+                        { name: 'Cable Bicep Curls', sets: 3, reps: '12-15', defaultWeight: 25, notes: 'No swinging' },
+                        { name: 'Dumbbell Lateral Raises', sets: 3, reps: '12-15', defaultWeight: 8, notes: 'Control is key' }
+                    ]
+                }
+            };
+
+            const COLOR_THEMES = {
+                'skinny': {
+                    name: 'Skinny Bitch',
+                    primary: '#ff6b4a',
+                    secondary: '#e63946',
+                    bg: '#f9f7f4',
+                    darkBg: '#1a1510',
+                    textLight: '#2d2415',
+                    textDark: '#f5f0eb',
+                    textMuted: '#708090',
+                    success: '#ff6b4a',
+                    warning: '#e63946'
+                },
+                'leading': {
+                    name: 'Leading Lady',
+                    primary: '#d4af37',
+                    secondary: '#000000',
+                    bg: '#ffffff',
+                    darkBg: '#2a2522',
+                    textLight: '#000000',
+                    textDark: '#f5f1e8',
+                    textMuted: '#808080',
+                    success: '#c0c0c0',
+                    warning: '#ff6b6b'
+                },
+                'rockstar': {
+                    name: "80's Rockstar",
+                    primary: '#ff10f0',
+                    secondary: '#00ffff',
+                    bg: '#1a0a1a',
+                    darkBg: '#0f0515',
+                    textLight: '#ffffff',
+                    textDark: '#ffffff',
+                    textMuted: '#ff10f0',
+                    success: '#ff006e',
+                    warning: '#ffff33'
+                },
+                'kickass': {
+                    name: 'Kick Ass',
+                    primary: '#bfff00',
+                    secondary: '#000000',
+                    bg: '#f0f0f0',
+                    darkBg: '#1a1a1a',
+                    textLight: '#000000',
+                    textDark: '#ffffff',
+                    textMuted: '#666666',
+                    success: '#bfff00',
+                    warning: '#ff6b6b'
+                },
+                'assassin': {
+                    name: 'Nature Girl',
+                    primary: '#5a8c7a',
+                    secondary: '#2d4a3a',
+                    bg: '#f5f5f3',
+                    darkBg: '#1a1f1a',
+                    textLight: '#1a1a1a',
+                    textDark: '#f0f0ef',
+                    textMuted: '#6b7a6f',
+                    success: '#5a8c7a',
+                    warning: '#ff6b6b'
+                }
+            };
+
+            const EMOJIS = {
+                'fire': { emoji: '🔥', name: 'Fire' },
+                'bicep': { emoji: '💪', name: 'Bicep' },
+                'crown': { emoji: '👑', name: 'Crown' },
+                'diamond': { emoji: '💎', name: 'Diamond' },
+                'rose': { emoji: '🌹', name: 'Rose' },
+                'dancer': { emoji: '💃', name: 'Dancer' },
+                'kiss': { emoji: '💋', name: 'Kiss' }
+            };
+
+            const FONTS = {
+                'monoton': { name: 'Monoton', family: 'Monoton' },
+                'blackops': { name: 'Black Ops', family: 'Black Ops One' },
+                'orbitron': { name: 'Orbitron', family: 'Orbitron' },
+                'lilita': { name: 'Lilita', family: 'Lilita One' },
+                'righteous': { name: 'Righteous', family: 'Righteous' },
+                'bebas': { name: 'Bebas', family: 'Bebas Neue' },
+                'spacemono': { name: 'Space Mono', family: 'Space Mono' },
+                'fredoka': { name: 'Fredoka', family: 'Fredoka' }
+            };
+
+            // State
+            const [workoutCount, setWorkoutCount] = useState(0);
+            const [currentTipIndex, setCurrentTipIndex] = useState(0);
+            const [currentWorkoutType, setCurrentWorkoutType] = useState('A');
+            const [currentExerciseIdx, setCurrentExerciseIdx] = useState(0);
+            const [currentSetIdx, setCurrentSetIdx] = useState(0);
+            const [timerActive, setTimerActive] = useState(false);
+            const [timeRemaining, setTimeRemaining] = useState(45);
+            const [exerciseWeights, setExerciseWeights] = useState({});
+            const [exerciseHistory, setExerciseHistory] = useState({});
+            const [user, setUser] = useState('daughter');
+            const [showProgressionAlert, setShowProgressionAlert] = useState(null);
+            const [currentReps, setCurrentReps] = useState('');
+            const [showStylePicker, setShowStylePicker] = useState(false);
+            const [soundEnabled, setSoundEnabled] = useState(true);
+            const [darkMode, setDarkMode] = useState(false);
+            const [colorTheme, setColorTheme] = useState('skinny');
+            const [fontTheme, setFontTheme] = useState('monoton');
+            const [emojiTheme, setEmojiTheme] = useState('fire');
+            const [newWeightAlert, setNewWeightAlert] = useState(null);
+            const vibrationSupported = 'vibrate' in navigator;
+            const audioContextRef = useRef(null);
+
+            const theme = COLOR_THEMES[colorTheme];
+            const font = FONTS[fontTheme];
+            const emoji = EMOJIS[emojiTheme];
+            const isDark = darkMode;
+
+            // Initialize
+            useEffect(() => {
+                const saved = localStorage.getItem(`lmq_weights_${user}`);
+                const savedHistory = localStorage.getItem(`lmq_history_${user}`);
+                const savedCount = localStorage.getItem(`lmq_count_${user}`);
+                const savedTip = localStorage.getItem('lmq_tip_index');
+                const savedSound = localStorage.getItem('lmq_sound_enabled');
+                const savedDarkMode = localStorage.getItem('lmq_dark_mode');
+                const savedColor = localStorage.getItem(`lmq_color_${user}`);
+                const savedFont = localStorage.getItem(`lmq_font_${user}`);
+                const savedEmoji = localStorage.getItem(`lmq_emoji_${user}`);
+
+                if (saved) setExerciseWeights(JSON.parse(saved));
+                if (savedHistory) setExerciseHistory(JSON.parse(savedHistory));
+                if (savedCount) setWorkoutCount(parseInt(savedCount));
+                if (savedTip) setCurrentTipIndex(parseInt(savedTip));
+                if (savedSound !== null) setSoundEnabled(JSON.parse(savedSound));
+                if (savedDarkMode !== null) setDarkMode(JSON.parse(savedDarkMode));
+                if (savedColor) setColorTheme(savedColor);
+                if (savedFont) setFontTheme(savedFont);
+                if (savedEmoji) setEmojiTheme(savedEmoji);
+            }, [user]);
+
+            // Timer
+            useEffect(() => {
+                let interval;
+                if (timerActive && timeRemaining > 0) {
+                    interval = setInterval(() => {
+                        setTimeRemaining(t => t - 1);
+                    }, 1000);
+                } else if (timeRemaining === 0 && timerActive) {
+                    playAlert();
+                    setTimerActive(false);
+                    setTimeRemaining(45);
+                }
+                return () => clearInterval(interval);
+            }, [timerActive, timeRemaining]);
+
+            const playAlert = () => {
+                if (vibrationSupported) {
+                    navigator.vibrate([100, 50, 100]);
+                }
+                
+                if (soundEnabled) {
+                    try {
+                        const audioContext = audioContextRef.current || new (window.AudioContext || window.webkitAudioContext)();
+                        audioContextRef.current = audioContext;
+                        const now = audioContext.currentTime;
+                        const osc = audioContext.createOscillator();
+                        const gain = audioContext.createGain();
+                        osc.connect(gain);
+                        gain.connect(audioContext.destination);
+                        osc.frequency.setValueAtTime(400, now);
+                        osc.frequency.exponentialRampToValueAtTime(800, now + 0.3);
+                        gain.gain.setValueAtTime(0.3, now);
+                        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+                        osc.start(now);
+                        osc.stop(now + 0.3);
+                    } catch (e) {}
+                }
+            };
+
+            const completeSet = () => {
+                if (!currentReps) return;
+                
+                const exerciseName = currentExercise.name;
+                const weight = getWeight();
+                const reps = parseInt(currentReps);
+
+                const history = exerciseHistory[exerciseName] || [];
+                
+                // Check if this is a new weight
+                const lastEntry = history[history.length - 1];
+                const isNewWeight = !lastEntry || lastEntry.weight !== weight;
+
+                history.push({ weight, reps, date: new Date().toISOString() });
+
+                const newHistory = { ...exerciseHistory, [exerciseName]: history };
+                setExerciseHistory(newHistory);
+                localStorage.setItem(`lmq_history_${user}`, JSON.stringify(newHistory));
+
+                // Check for progression
+                const recentSets = history.slice(-3);
+                if (recentSets.length === 3 && 
+                    recentSets.every(s => s.weight === weight && s.reps >= 15)) {
+                    const recommendedIncrease = weight <= 20 ? 5 : (weight <= 50 ? 10 : 5);
+                    setShowProgressionAlert({
+                        exercise: exerciseName,
+                        currentWeight: weight,
+                        newWeight: weight + recommendedIncrease
+                    });
+                }
+
+                // Show "moving up" alert on first set of new weight
+                if (isNewWeight && currentSetIdx === 0) {
+                    setNewWeightAlert({
+                        exercise: exerciseName,
+                        newWeight: weight
+                    });
+                    setTimeout(() => setNewWeightAlert(null), 3000);
+                }
+
+                setCurrentReps('');
+
+                if (currentSetIdx < currentExercise.sets - 1) {
+                    setCurrentSetIdx(currentSetIdx + 1);
+                    setTimeRemaining(45);
+                    playAlert();
+                } else {
+                    handleExerciseComplete();
+                }
+            };
+
+            const handleExerciseComplete = () => {
+                if (currentExerciseIdx < currentWorkout.exercises.length - 1) {
+                    setCurrentExerciseIdx(currentExerciseIdx + 1);
+                    setCurrentSetIdx(0);
+                    setTimeRemaining(60);
+                } else {
+                    const newCount = workoutCount + 1;
+                    setWorkoutCount(newCount);
+                    localStorage.setItem(`lmq_count_${user}`, newCount);
+                    localStorage.setItem('lmq_tip_index', ((currentTipIndex + 1) % TIPS.length).toString());
+
+                    setTimeout(() => {
+                        setCurrentExerciseIdx(0);
+                        setCurrentSetIdx(0);
+                        setCurrentTipIndex((currentTipIndex + 1) % TIPS.length);
+                    }, 2000);
+                }
+            };
+
+            const updateWeight = (weight) => {
+                const weights = { ...exerciseWeights, [currentExercise.name]: weight };
+                setExerciseWeights(weights);
+                localStorage.setItem(`lmq_weights_${user}`, JSON.stringify(weights));
+            };
+
+            const changeTheme = (newTheme) => {
+                setColorTheme(newTheme);
+                localStorage.setItem(`lmq_color_${user}`, newTheme);
+            };
+
+            const changeFont = (newFont) => {
+                setFontTheme(newFont);
+                localStorage.setItem(`lmq_font_${user}`, newFont);
+            };
+
+            const changeEmoji = (newEmoji) => {
+                setEmojiTheme(newEmoji);
+                localStorage.setItem(`lmq_emoji_${user}`, newEmoji);
+            };
+
+            const getWeight = () => exerciseWeights[currentExercise.name] || currentExercise.defaultWeight;
+
+            const currentWorkout = WORKOUTS[currentWorkoutType];
+            const currentExercise = currentWorkout.exercises[currentExerciseIdx];
+            const currentTip = TIPS[currentTipIndex % TIPS.length];
+            const isWorkoutComplete = currentExerciseIdx === currentWorkout.exercises.length - 1 && 
+                                      currentSetIdx === currentExercise.sets - 1;
+
+            const bgColor = isDark ? theme.darkBg : theme.bg;
+            const textColor = isDark ? theme.textDark : theme.textLight;
+            const mutedColor = isDark ? '#a89999' : theme.textMuted;
+
+            return (
+                <div style={{ 
+                    background: bgColor,
+                    minHeight: '100vh',
+                    padding: '16px 16px 100px 16px',
+                    color: textColor,
+                    fontFamily: font.family,
+                    transition: 'background 0.3s'
+                }}>
+                    {/* Header */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                        <div style={{ fontSize: '20px' }}>{emoji.emoji}</div>
+                        <div style={{ textAlign: 'center', flex: 1 }}>
+                            <p style={{ fontSize: '11px', color: mutedColor, margin: '0', fontWeight: '600', textTransform: 'uppercase' }}>
+                                LMQ • Road to 32
+                            </p>
+                        </div>
+                        <div style={{ fontSize: '20px' }}>👑</div>
+                    </div>
+
+                    {/* Big Workout Count */}
+                    <div style={{
+                        background: `linear-gradient(135deg, ${theme.primary} 0%, ${theme.secondary} 100%)`,
+                        color: '#fff',
+                        padding: '24px 16px',
+                        borderRadius: '16px',
+                        marginBottom: '20px',
+                        textAlign: 'center',
+                        boxShadow: '0 6px 16px rgba(0,0,0,0.2)'
+                    }}>
+                        <div style={{ fontSize: '56px', fontWeight: '800', lineHeight: '1', marginBottom: '8px', fontFamily: font.family }}>
+                            {workoutCount + 1}
+                        </div>
+                        <div style={{ fontSize: '16px', fontWeight: '600', opacity: 0.95 }}>
+                            of 32 Workouts
+                        </div>
+                        <div style={{ fontSize: '12px', opacity: 0.85, marginTop: '8px' }}>
+                            {32 - workoutCount} left • You're {Math.round((workoutCount + 1) / 32 * 100)}% done
+                        </div>
+                    </div>
+
+                    {/* New Weight Alert */}
+                    {newWeightAlert && (
+                        <div style={{
+                            background: theme.primary,
+                            color: '#fff',
+                            padding: '14px',
+                            borderRadius: '8px',
+                            marginBottom: '20px',
+                            textAlign: 'center',
+                            fontWeight: '700',
+                            animation: 'slideIn 0.3s ease-out'
+                        }}>
+                            {emoji.emoji} Congrats! You're getting stronger. Moving up to {newWeightAlert.newWeight} lbs!
+                        </div>
+                    )}
+
+                    {/* Daily Tip */}
+                    <div style={{
+                        background: isDark ? `rgba(${parseInt(theme.primary.slice(1,3), 16)}, ${parseInt(theme.primary.slice(3,5), 16)}, ${parseInt(theme.primary.slice(5,7), 16)}, 0.1)` : `rgba(${parseInt(theme.primary.slice(1,3), 16)}, ${parseInt(theme.primary.slice(3,5), 16)}, ${parseInt(theme.primary.slice(5,7), 16)}, 0.08)`,
+                        border: `2px solid ${theme.primary}`,
+                        color: textColor,
+                        padding: '16px',
+                        borderRadius: '12px',
+                        marginBottom: '20px',
+                        textAlign: 'center'
+                    }}>
+                        <div style={{ fontSize: '10px', fontWeight: '700', color: theme.primary, opacity: 0.8, marginBottom: '6px', textTransform: 'uppercase' }}>
+                            ✨ Today's Mindset
+                        </div>
+                        <div style={{ fontSize: '14px', fontWeight: '600', lineHeight: '1.4' }}>
+                            "{currentTip}"
+                        </div>
+                    </div>
+
+                    {/* User Selection */}
+                    <div style={{ display: 'flex', gap: '8px', marginBottom: '20px' }}>
+                        <button
+                            onClick={() => setUser('daughter')}
+                            style={{
+                                flex: 1,
+                                padding: '10px',
+                                border: 'none',
+                                borderRadius: '8px',
+                                background: user === 'daughter' ? theme.primary : (isDark ? '#3d3d3d' : '#f0f0f0'),
+                                color: user === 'daughter' ? '#fff' : textColor,
+                                fontWeight: '600',
+                                cursor: 'pointer',
+                                fontFamily: font.family,
+                                fontSize: '14px'
+                            }}
+                        >
+                            👧 Daughter
+                        </button>
+                        <button
+                            onClick={() => setUser('wife')}
+                            style={{
+                                flex: 1,
+                                padding: '10px',
+                                border: 'none',
+                                borderRadius: '8px',
+                                background: user === 'wife' ? theme.primary : (isDark ? '#3d3d3d' : '#f0f0f0'),
+                                color: user === 'wife' ? '#fff' : textColor,
+                                fontWeight: '600',
+                                cursor: 'pointer',
+                                fontFamily: font.family,
+                                fontSize: '14px'
+                            }}
+                        >
+                            👩 Wife
+                        </button>
+                    </div>
+
+                    {/* Workout Type */}
+                    <div style={{
+                        background: isDark ? '#3d3d3d' : '#f0e8df',
+                        padding: '12px 16px',
+                        borderRadius: '8px',
+                        marginBottom: '20px',
+                        textAlign: 'center',
+                        fontWeight: '600',
+                        color: theme.primary,
+                        fontFamily: font.family,
+                        fontSize: '16px'
+                    }}>
+                        {currentWorkout.name}
+                    </div>
+
+                    {/* Progress Bar */}
+                    <div style={{ marginBottom: '20px' }}>
+                        <div style={{ fontSize: '12px', fontWeight: '600', color: mutedColor, marginBottom: '6px' }}>
+                            Progress: {currentExerciseIdx + 1} of {currentWorkout.exercises.length}
+                        </div>
+                        <div style={{
+                            background: isDark ? '#3d3d3d' : '#e8ddd3',
+                            height: '6px',
+                            borderRadius: '3px',
+                            overflow: 'hidden'
+                        }}>
+                            <div style={{
+                                background: theme.primary,
+                                height: '100%',
+                                width: `${((currentExerciseIdx + 1) / currentWorkout.exercises.length) * 100}%`,
+                                transition: 'width 0.3s'
+                            }} />
+                        </div>
+                    </div>
+
+                    {/* Exercise Card */}
+                    <div style={{
+                        background: isDark ? '#2d2a27' : '#fff',
+                        borderRadius: '12px',
+                        padding: '24px',
+                        marginBottom: '20px',
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
+                    }}>
+                        <h2 style={{ margin: '0 0 8px 0', fontSize: '22px', fontWeight: '700', color: theme.primary, fontFamily: font.family }}>
+                            {currentExercise.name}
+                        </h2>
+                        <p style={{ margin: '0 0 16px 0', fontSize: '13px', color: mutedColor, fontStyle: 'italic' }}>
+                            💡 {currentExercise.notes}
+                        </p>
+
+                        {/* Set Counter */}
+                        <div style={{
+                            display: 'grid',
+                            gridTemplateColumns: '1fr 1fr 1fr',
+                            gap: '8px',
+                            marginBottom: '20px'
+                        }}>
+                            {Array.from({ length: currentExercise.sets }).map((_, i) => (
+                                <div
+                                    key={i}
+                                    style={{
+                                        padding: '12px',
+                                        borderRadius: '8px',
+                                        background: i < currentSetIdx ? '#d4f1d4' : (i === currentSetIdx ? '#fff3cd' : (isDark ? '#3d3d3d' : '#e8ddd3')),
+                                        border: i === currentSetIdx ? `2px solid ${theme.primary}` : 'none',
+                                        textAlign: 'center',
+                                        fontWeight: '600',
+                                        color: i < currentSetIdx ? '#2d5016' : textColor,
+                                        fontFamily: font.family
+                                    }}
+                                >
+                                    Set {i + 1}
+                                    {i < currentSetIdx && ' ✓'}
+                                </div>
+                            ))}
+                        </div>
+
+                        {/* Weight Input */}
+                        <div style={{ marginBottom: '16px' }}>
+                            <label style={{ fontSize: '12px', fontWeight: '600', color: mutedColor, display: 'block', marginBottom: '6px' }}>
+                                Weight (lbs)
+                            </label>
+                            <input
+                                type="number"
+                                value={getWeight()}
+                                onChange={(e) => updateWeight(parseFloat(e.target.value) || 0)}
+                                style={{
+                                    width: '100%',
+                                    padding: '10px',
+                                    border: `2px solid ${isDark ? '#3d3d3d' : '#e8ddd3'}`,
+                                    borderRadius: '8px',
+                                    fontSize: '16px',
+                                    fontWeight: '600',
+                                    color: textColor,
+                                    background: isDark ? '#1a1510' : '#fff',
+                                    boxSizing: 'border-box',
+                                    fontFamily: 'monospace'
+                                }}
+                            />
+                        </div>
+
+                        {/* Reps Input */}
+                        <div style={{ marginBottom: '16px' }}>
+                            <label style={{ fontSize: '12px', fontWeight: '600', color: mutedColor, display: 'block', marginBottom: '6px' }}>
+                                Reps Completed
+                            </label>
+                            <input
+                                type="number"
+                                placeholder="12-15"
+                                min="1"
+                                max="30"
+                                value={currentReps}
+                                onChange={(e) => setCurrentReps(e.target.value)}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter') completeSet();
+                                }}
+                                style={{
+                                    width: '100%',
+                                    padding: '10px',
+                                    border: `2px solid ${isDark ? '#3d3d3d' : '#e8ddd3'}`,
+                                    borderRadius: '8px',
+                                    fontSize: '16px',
+                                    fontWeight: '600',
+                                    color: textColor,
+                                    background: isDark ? '#1a1510' : '#fff',
+                                    boxSizing: 'border-box',
+                                    fontFamily: 'monospace'
+                                }}
+                            />
+                        </div>
+
+                        {/* Complete Set Button */}
+                        <button
+                            onClick={completeSet}
+                            style={{
+                                width: '100%',
+                                padding: '14px',
+                                background: theme.primary,
+                                color: '#fff',
+                                border: 'none',
+                                borderRadius: '8px',
+                                fontSize: '16px',
+                                fontWeight: '700',
+                                cursor: 'pointer',
+                                marginBottom: '12px',
+                                fontFamily: font.family
+                            }}
+                            onMouseOver={(e) => e.target.style.background = theme.secondary}
+                            onMouseOut={(e) => e.target.style.background = theme.primary}
+                        >
+                            ✓ Set {currentSetIdx + 1} Complete
+                        </button>
+
+                        {/* Rest Timer */}
+                        <div style={{
+                            background: isDark ? '#3d3d3d' : '#f5f0eb',
+                            padding: '16px',
+                            borderRadius: '8px',
+                            textAlign: 'center',
+                            border: timeRemaining <= 10 && timerActive ? `2px solid ${theme.warning}` : 'none'
+                        }}>
+                            <div style={{ fontSize: '12px', color: mutedColor, marginBottom: '8px', fontWeight: '600' }}>
+                                Rest {currentSetIdx === 0 && currentExerciseIdx === 0 ? '60' : '45'} seconds
+                            </div>
+                            <div style={{ fontSize: '40px', fontWeight: '700', color: theme.primary, marginBottom: '12px', fontFamily: 'monospace' }}>
+                                {timeRemaining}
+                            </div>
+                            {timeRemaining <= 10 && timerActive && (
+                                <div style={{ fontSize: '11px', color: theme.warning, fontWeight: '700', marginBottom: '8px' }}>
+                                    ⚠️ GET READY!
+                                </div>
+                            )}
+                            <div style={{ display: 'flex', gap: '8px' }}>
+                                <button
+                                    onClick={() => setTimerActive(!timerActive)}
+                                    style={{
+                                        flex: 1,
+                                        padding: '8px 16px',
+                                        background: timerActive ? theme.warning : theme.success,
+                                        color: '#fff',
+                                        border: 'none',
+                                        borderRadius: '6px',
+                                        fontWeight: '600',
+                                        cursor: 'pointer'
+                                    }}
+                                >
+                                    {timerActive ? '⏸ Pause' : '▶ Start'}
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        setTimerActive(false);
+                                        setTimeRemaining(45);
+                                    }}
+                                    style={{
+                                        flex: 1,
+                                        padding: '8px 16px',
+                                        background: isDark ? '#3d3d3d' : '#e8ddd3',
+                                        color: textColor,
+                                        border: 'none',
+                                        borderRadius: '6px',
+                                        fontWeight: '600',
+                                        cursor: 'pointer'
+                                    }}
+                                >
+                                    ↺ Reset
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Exercise List */}
+                    <div style={{ marginBottom: '20px' }}>
+                        <h3 style={{ fontSize: '13px', fontWeight: '700', color: mutedColor, marginBottom: '8px', textTransform: 'uppercase' }}>
+                            Today's Exercises
+                        </h3>
+                        <div style={{ display: 'grid', gap: '6px' }}>
+                            {currentWorkout.exercises.map((exercise, i) => (
+                                <div
+                                    key={i}
+                                    style={{
+                                        padding: '10px 12px',
+                                        background: i === currentExerciseIdx ? '#fff3cd' : (i < currentExerciseIdx ? '#d4f1d4' : (isDark ? '#3d3d3d' : '#f5f0eb')),
+                                        borderRadius: '6px',
+                                        fontSize: '13px',
+                                        fontWeight: '500',
+                                        color: i < currentExerciseIdx ? '#2d5016' : textColor,
+                                        display: 'flex',
+                                        justifyContent: 'space-between',
+                                        alignItems: 'center'
+                                    }}
+                                >
+                                    <span>{exercise.name}</span>
+                                    <span style={{ fontSize: '11px', color: mutedColor }}>
+                                        {i < currentExerciseIdx ? '✓' : (i === currentExerciseIdx ? '→' : '○')}
+                                    </span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Progression Alert */}
+                    {showProgressionAlert && (
+                        <div style={{
+                            background: '#d4f1d4',
+                            border: '2px solid #51cf66',
+                            borderRadius: '8px',
+                            padding: '14px',
+                            marginBottom: '20px',
+                            color: '#2d5016'
+                        }}>
+                            <div style={{ fontWeight: '700', marginBottom: '4px' }}>🚀 Time to Level Up!</div>
+                            <div style={{ fontSize: '13px', marginBottom: '8px' }}>
+                                You've crushed {showProgressionAlert.exercise} at {showProgressionAlert.currentWeight} lbs! 
+                                <br />
+                                <strong>Try {showProgressionAlert.newWeight} lbs next time.</strong>
+                            </div>
+                            <button
+                                onClick={() => setShowProgressionAlert(null)}
+                                style={{
+                                    padding: '6px 12px',
+                                    background: '#51cf66',
+                                    color: '#fff',
+                                    border: 'none',
+                                    borderRadius: '4px',
+                                    fontWeight: '600',
+                                    cursor: 'pointer'
+                                }}
+                            >
+                                Got it!
+                            </button>
+                        </div>
+                    )}
+
+                    {/* Workout Complete */}
+                    {isWorkoutComplete && currentExerciseIdx === currentWorkout.exercises.length - 1 && (
+                        <div style={{
+                            background: `linear-gradient(135deg, ${theme.success} 0%, ${theme.success}dd 100%)`,
+                            color: '#fff',
+                            padding: '24px',
+                            borderRadius: '12px',
+                            textAlign: 'center',
+                            marginTop: '20px'
+                        }}>
+                            <div style={{ fontSize: '36px', marginBottom: '8px' }}>🎉</div>
+                            <div style={{ fontSize: '20px', fontWeight: '700', marginBottom: '4px', fontFamily: font.family }}>YOU'RE A QUEEN!</div>
+                            <div style={{ fontSize: '13px', marginBottom: '12px' }}>
+                                Workout {workoutCount + 1} of 32 Complete
+                            </div>
+                            <div style={{ fontSize: '11px', opacity: 0.9 }}>
+                                You're {Math.round((workoutCount + 1) / 32 * 100)}% through your summer program
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Stats Footer */}
+                    <div style={{
+                        display: 'grid',
+                        gridTemplateColumns: '1fr 1fr',
+                        gap: '8px',
+                        marginTop: '20px'
+                    }}>
+                        <div style={{
+                            background: isDark ? '#3d3d3d' : '#f5f0eb',
+                            padding: '12px',
+                            borderRadius: '8px',
+                            textAlign: 'center'
+                        }}>
+                            <div style={{ fontSize: '11px', color: mutedColor, marginBottom: '4px' }}>Completed</div>
+                            <div style={{ fontSize: '18px', fontWeight: '700', color: theme.primary, fontFamily: font.family }}>{workoutCount}</div>
+                        </div>
+                        <div style={{
+                            background: isDark ? '#3d3d3d' : '#f5f0eb',
+                            padding: '12px',
+                            borderRadius: '8px',
+                            textAlign: 'center'
+                        }}>
+                            <div style={{ fontSize: '11px', color: mutedColor, marginBottom: '4px' }}>Remaining</div>
+                            <div style={{ fontSize: '18px', fontWeight: '700', color: theme.primary, fontFamily: font.family }}>{32 - workoutCount}</div>
+                        </div>
+                    </div>
+
+                    {/* Style Picker - Bottom Fixed */}
+                    <div style={{
+                        position: 'fixed',
+                        bottom: 0,
+                        left: 0,
+                        right: 0,
+                        background: isDark ? theme.darkBg : theme.bg,
+                        borderTop: `2px solid ${theme.primary}`,
+                        padding: '8px 16px',
+                        maxHeight: showStylePicker ? '500px' : '50px',
+                        overflowY: 'auto',
+                        transition: 'max-height 0.3s',
+                        zIndex: 1000
+                    }}>
+                        <button
+                            onClick={() => setShowStylePicker(!showStylePicker)}
+                            style={{
+                                width: '100%',
+                                padding: '10px',
+                                background: theme.primary,
+                                color: '#fff',
+                                border: 'none',
+                                borderRadius: '6px',
+                                fontWeight: '600',
+                                cursor: 'pointer',
+                                fontFamily: font.family,
+                                marginBottom: showStylePicker ? '12px' : '0'
+                            }}
+                        >
+                            {emoji.emoji} {theme.name} | {font.name}
+                        </button>
+
+                        {showStylePicker && (
+                            <>
+                                <div style={{ fontSize: '12px', fontWeight: '700', color: mutedColor, marginBottom: '8px', textTransform: 'uppercase' }}>
+                                    😎 Emoji
+                                </div>
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '6px', marginBottom: '12px' }}>
+                                    {Object.entries(EMOJIS).map(([key, e]) => (
+                                        <button
+                                            key={key}
+                                            onClick={() => changeEmoji(key)}
+                                            style={{
+                                                padding: '10px 6px',
+                                                background: emojiTheme === key ? theme.primary : (isDark ? '#3d3d3d' : '#f0f0f0'),
+                                                color: emojiTheme === key ? '#fff' : textColor,
+                                                border: `2px solid ${emojiTheme === key ? theme.primary : 'transparent'}`,
+                                                borderRadius: '4px',
+                                                fontSize: '20px',
+                                                cursor: 'pointer',
+                                                fontWeight: '700'
+                                            }}
+                                            title={e.name}
+                                        >
+                                            {e.emoji}
+                                        </button>
+                                    ))}
+                                </div>
+
+                                <div style={{ fontSize: '12px', fontWeight: '700', color: mutedColor, marginBottom: '8px', textTransform: 'uppercase' }}>
+                                    🎨 Colors
+                                </div>
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '6px', marginBottom: '12px' }}>
+                                    {Object.entries(COLOR_THEMES).map(([key, c]) => (
+                                        <button
+                                            key={key}
+                                            onClick={() => changeTheme(key)}
+                                            style={{
+                                                padding: '8px 6px',
+                                                background: colorTheme === key ? c.primary : (isDark ? '#3d3d3d' : '#f0f0f0'),
+                                                color: colorTheme === key ? '#fff' : textColor,
+                                                border: `2px solid ${colorTheme === key ? c.primary : 'transparent'}`,
+                                                borderRadius: '4px',
+                                                fontSize: '10px',
+                                                fontWeight: '600',
+                                                cursor: 'pointer'
+                                            }}
+                                        >
+                                            {c.name}
+                                        </button>
+                                    ))}
+                                </div>
+
+                                <div style={{ fontSize: '12px', fontWeight: '700', color: mutedColor, marginBottom: '8px', textTransform: 'uppercase' }}>
+                                    🔤 Fonts
+                                </div>
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '6px' }}>
+                                    {Object.entries(FONTS).map(([key, f]) => (
+                                        <button
+                                            key={key}
+                                            onClick={() => changeFont(key)}
+                                            style={{
+                                                padding: '8px 6px',
+                                                background: fontTheme === key ? theme.primary : (isDark ? '#3d3d3d' : '#f0f0f0'),
+                                                color: fontTheme === key ? '#fff' : textColor,
+                                                border: `2px solid ${fontTheme === key ? theme.primary : 'transparent'}`,
+                                                borderRadius: '4px',
+                                                fontSize: '9px',
+                                                fontWeight: '600',
+                                                cursor: 'pointer',
+                                                fontFamily: f.family
+                                            }}
+                                        >
+                                            {f.name}
+                                        </button>
+                                    ))}
+                                </div>
+                            </>
+                        )}
+                    </div>
+                </div>
+            );
+        };
+
+        ReactDOM.render(<LeanMeanQueenApp />, document.getElementById('root'));
+    </script>
+</body>
+</html>

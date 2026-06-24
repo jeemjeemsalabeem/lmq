@@ -1,0 +1,1187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>LMQ</title>
+<link rel="apple-touch-icon" href="lmq-icon.png">
+<link rel="icon" type="image/png" href="lmq-icon.png">
+<meta name="theme-color" content="#2e3440">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="LMQ">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+
+:root{
+  --bg:#2e3440;--bg2:#353c4a;--bg3:#3d4555;
+  --rule:rgba(255,255,255,0.07);
+  --pink:#e91e8c;--pink-dim:rgba(233,30,140,0.15);
+  --orange:#ff6b35;
+  --white:#f2f0ed;--w80:rgba(242,240,237,0.80);
+  --w50:rgba(242,240,237,0.50);--w25:rgba(242,240,237,0.25);
+  --w10:rgba(242,240,237,0.07);
+}
+
+html,body{height:100%;width:100%;background:var(--bg);color:var(--white);font-family:'Inter',sans-serif;font-weight:300;overflow:hidden;}
+
+#app{height:100vh;display:flex;flex-direction:column;overflow:hidden;}
+
+/* HEADER */
+#header{flex-shrink:0;display:flex;flex-direction:row;align-items:center;justify-content:space-between;padding:14px 20px 12px;border-bottom:1px solid var(--rule);}
+#logo-img{height:44px;width:44px;object-fit:contain;border-radius:6px;}
+#logo-fallback{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:300;letter-spacing:.22em;color:#d4af37;}
+#workout-label{font-size:9px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:var(--w50);text-align:center;flex:1;padding:0 12px;}
+#workout-label span{color:var(--pink);font-weight:600;}
+#user-btn{font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--pink);background:transparent;border:1px solid rgba(233,30,140,0.35);border-radius:20px;padding:5px 12px;cursor:pointer;white-space:nowrap;}
+
+/* SCROLL BODY */
+#body{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;padding:0 24px;}
+
+/* TODAY'S FOCUS */
+#focus-bar{padding:10px 0 14px;border-bottom:1px solid var(--rule);margin-bottom:20px;}
+#focus-label{font-size:9px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(--pink);margin-bottom:4px;}
+#focus-text{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:16px;font-weight:300;color:var(--w80);line-height:1.4;}
+
+/* EXERCISE CARDS */
+.ex-card{background:var(--bg2);border-radius:10px;margin-bottom:10px;overflow:hidden;border:1px solid var(--rule);transition:border-color 0.3s;}
+.ex-card.active{border-color:var(--pink);}
+.ex-card.done{opacity:0.7;}
+.ex-card-header{display:flex;align-items:center;padding:14px 16px;gap:12px;}
+.ex-number{font-size:10px;font-weight:600;letter-spacing:.1em;color:var(--w25);min-width:18px;}
+.ex-card.active .ex-number{color:var(--pink);}
+.ex-card.done .ex-number{color:var(--orange);}
+.ex-name-block{flex:1;}
+.ex-name{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:400;color:var(--white);line-height:1.1;}
+.ex-note{font-size:10px;color:var(--w50);letter-spacing:.04em;margin-top:2px;}
+.ex-status{font-size:18px;min-width:24px;text-align:right;}
+.ex-body{padding:0 16px 16px;display:none;}
+.ex-card.active .ex-body{display:block;}
+.set-progress{display:flex;gap:6px;margin-bottom:16px;}
+.set-pip{flex:1;height:3px;border-radius:2px;background:var(--w10);transition:background 0.3s;}
+.set-pip.done{background:var(--orange);}
+.set-pip.active{background:var(--pink);}
+.set-label{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--w50);margin-bottom:14px;}
+.set-label span{color:var(--pink);}
+.inputs-row{display:flex;gap:10px;margin-bottom:14px;}
+.input-block{flex:1;background:var(--bg3);border-radius:8px;padding:12px 14px;border:1px solid var(--rule);}
+.input-lbl{font-size:9px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--w50);margin-bottom:6px;}
+.input-num{width:100%;background:transparent;border:none;outline:none;font-size:26px;font-weight:300;color:var(--white);font-family:'Inter',sans-serif;}
+.input-num::placeholder{color:var(--w25);}
+.nailed-btn{width:100%;padding:14px;background:var(--pink);border:none;border-radius:8px;color:#fff;font-size:13px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;transition:background 0.15s;}
+.nailed-btn:active{background:#c4177a;}
+
+/* SPACER */
+#scroll-spacer{height:60px;}
+
+/* BOTTOM BAR */
+#bottombar{flex-shrink:0;display:flex;justify-content:space-between;align-items:center;padding:10px 20px 28px;border-top:1px solid var(--rule);background:var(--bg);}
+.bar-btn{font-size:9px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--w50);background:transparent;border:1px solid var(--rule);border-radius:4px;padding:7px 16px;cursor:pointer;}
+
+/* OVERLAYS */
+.overlay{position:fixed;inset:0;z-index:200;display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity 0.25s;}
+.overlay.show{opacity:1;pointer-events:all;}
+
+/* REST OVERLAY */
+#rest-overlay{background:rgba(30,36,46,0.97);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);}
+#rest-label{font-size:9px;font-weight:600;letter-spacing:.22em;text-transform:uppercase;color:var(--w50);margin-bottom:16px;}
+#rest-num{font-family:'Cormorant Garamond',serif;font-size:110px;font-weight:300;line-height:1;color:var(--white);transition:color 0.3s;margin-bottom:4px;}
+#rest-num.urgent{color:var(--pink);}
+#rest-next{font-size:11px;color:var(--w50);letter-spacing:.08em;margin-bottom:8px;text-align:center;padding:0 32px;}
+#rest-ready{font-size:10px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:var(--pink);height:18px;margin-bottom:40px;}
+#rest-skip{font-size:9px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(--w50);background:transparent;border:1px solid var(--rule);border-radius:4px;padding:10px 28px;cursor:pointer;}
+
+/* REST/SPECIAL DAY SCREEN */
+#day-screen{flex:1;display:none;flex-direction:column;align-items:center;justify-content:center;padding:40px 32px;text-align:center;}
+#day-screen.show{display:flex;}
+#day-icon{font-size:52px;margin-bottom:20px;}
+#day-type{font-size:9px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:var(--pink);margin-bottom:8px;}
+#day-title{font-family:'Cormorant Garamond',serif;font-size:30px;font-weight:300;color:var(--white);margin-bottom:24px;line-height:1.2;}
+#day-idea{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:17px;font-weight:300;color:var(--w80);line-height:1.5;margin-bottom:36px;padding:0 8px;}
+.day-skip-row{display:flex;gap:10px;margin-top:8px;}
+.day-action-btn{padding:10px 20px;border-radius:4px;font-size:9px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;cursor:pointer;}
+.day-skip{background:transparent;border:1px solid var(--rule);color:var(--w50);}
+.day-reset{background:transparent;border:1px solid rgba(233,30,140,0.4);color:var(--pink);}
+
+/* USER OVERLAY */
+#user-overlay{background:rgba(20,24,34,0.95);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);gap:0;}
+.user-name-btn{font-family:'Cormorant Garamond',serif;font-size:48px;font-weight:300;letter-spacing:.08em;color:var(--w50);background:transparent;border:none;cursor:pointer;padding:20px 0;transition:color 0.2s;}
+.user-name-btn.active{color:var(--pink);}
+.user-divider{width:32px;height:1px;background:var(--rule);margin:4px auto;}
+#user-dismiss{position:absolute;bottom:48px;font-size:9px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(--w25);background:transparent;border:none;cursor:pointer;padding:8px;}
+
+/* SETUP OVERLAY */
+#setup-overlay{background:rgba(20,24,34,0.98);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);text-align:center;padding:40px 32px;justify-content:center;}
+#setup-name{font-family:'Cormorant Garamond',serif;font-size:13px;font-weight:300;letter-spacing:.18em;text-transform:uppercase;color:var(--w50);margin-bottom:6px;}
+#setup-title{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:300;letter-spacing:.04em;color:var(--white);margin-bottom:8px;}
+#setup-sub{font-size:11px;color:var(--w50);letter-spacing:.06em;margin-bottom:32px;}
+.setup-choice{width:100%;padding:18px;background:var(--bg2);border:1px solid var(--rule);border-radius:10px;margin-bottom:10px;cursor:pointer;text-align:left;transition:border-color 0.2s;}
+.setup-choice:active{border-color:var(--pink);}
+.setup-choice-title{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:400;color:var(--white);margin-bottom:3px;}
+.setup-choice-sub{font-size:10px;color:var(--w50);letter-spacing:.06em;}
+
+/* DAY7 PICKER OVERLAY */
+#day7-overlay{background:rgba(20,24,34,0.98);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);text-align:center;padding:40px 32px;}
+#day7-title{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:300;color:var(--white);margin-bottom:8px;}
+#day7-sub{font-size:11px;color:var(--w50);letter-spacing:.06em;margin-bottom:28px;}
+.d7-btn{width:100%;padding:16px;background:var(--bg2);border:1px solid var(--rule);border-radius:10px;margin-bottom:8px;cursor:pointer;text-align:left;transition:border-color 0.2s;}
+.d7-btn:active{border-color:var(--pink);}
+.d7-btn-title{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:400;color:var(--white);margin-bottom:2px;}
+.d7-btn-sub{font-size:10px;color:var(--w50);letter-spacing:.05em;}
+
+/* STYLE OVERLAY */
+#style-overlay{justify-content:flex-end;align-items:stretch;background:rgba(20,24,34,0.85);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);}
+#style-sheet{background:var(--bg2);border-top:1px solid var(--rule);border-radius:16px 16px 0 0;padding:24px 24px 48px;transform:translateY(100%);transition:transform 0.3s ease;position:relative;}
+#style-overlay.show #style-sheet{transform:translateY(0);}
+#style-close{position:absolute;top:18px;right:20px;font-size:9px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--w50);background:transparent;border:none;cursor:pointer;}
+.sty-label{font-size:9px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:var(--w25);margin-bottom:10px;margin-top:18px;}
+.sty-label:first-child{margin-top:0;}
+.sty-emoji-row{display:flex;gap:8px;}
+.sty-em{flex:1;font-size:22px;padding:9px 4px;border-radius:6px;background:var(--w10);border:1px solid transparent;cursor:pointer;text-align:center;}
+.sty-em.sel{border-color:var(--pink);background:var(--pink-dim);}
+.sty-color-row{display:flex;gap:6px;flex-wrap:wrap;}
+.sty-col{flex:1;min-width:90px;padding:9px 6px;border-radius:6px;font-size:8px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;cursor:pointer;text-align:center;color:var(--w50);background:var(--w10);border:2px solid transparent;line-height:1.3;}
+.sty-col.sel{border-color:var(--pink);color:var(--white);}
+.sty-font-row{display:flex;gap:6px;flex-wrap:wrap;}
+.sty-font{padding:8px 12px;border-radius:4px;font-size:11px;font-weight:500;cursor:pointer;color:var(--w50);background:var(--w10);border:1px solid transparent;}
+.sty-font.sel{border-color:var(--pink);color:var(--white);}
+
+/* PROGRESS OVERLAY */
+#progress-overlay{justify-content:flex-end;align-items:stretch;background:rgba(20,24,34,0.85);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);}
+#progress-sheet{background:var(--bg2);border-top:1px solid var(--rule);border-radius:16px 16px 0 0;padding:24px 24px 48px;transform:translateY(100%);transition:transform 0.3s ease;position:relative;max-height:80vh;overflow-y:auto;}
+#progress-overlay.show #progress-sheet{transform:translateY(0);}
+#progress-close{position:absolute;top:18px;right:20px;font-size:9px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--w50);background:transparent;border:none;cursor:pointer;}
+.prog-section-label{font-size:9px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:var(--w25);margin-bottom:12px;margin-top:20px;}
+.prog-section-label:first-child{margin-top:0;}
+.prog-stat-row{display:flex;gap:10px;margin-bottom:16px;}
+.prog-stat{flex:1;background:var(--bg3);border-radius:8px;padding:12px 14px;}
+.prog-stat-num{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:300;color:var(--white);line-height:1;}
+.prog-stat-lbl{font-size:9px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--w50);margin-top:4px;}
+.prog-ex-row{padding:12px 0;border-bottom:1px solid var(--rule);}
+.prog-ex-row:last-child{border-bottom:none;}
+.prog-ex-name{font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:400;color:var(--white);margin-bottom:4px;}
+.prog-ex-current{font-size:11px;color:var(--w50);letter-spacing:.03em;margin-bottom:2px;}
+.prog-ex-next{font-size:11px;color:var(--pink);letter-spacing:.03em;}
+.prog-ex-ready{font-size:11px;color:var(--orange);font-weight:600;letter-spacing:.03em;}
+.prog-day-row{display:flex;gap:4px;margin-bottom:16px;}
+.prog-day-pip{flex:1;height:5px;border-radius:3px;background:var(--w10);}
+.prog-day-pip.done{background:var(--orange);}
+.prog-day-pip.today{background:var(--pink);}
+
+/* CONFIRM OVERLAY */
+#confirm-overlay{background:rgba(20,24,34,0.97);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);text-align:center;padding:40px 32px;}
+#confirm-title{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:300;color:var(--white);margin-bottom:8px;line-height:1.2;}
+#confirm-sub{font-size:12px;color:var(--w50);letter-spacing:.04em;margin-bottom:36px;line-height:1.6;}
+.confirm-btn-row{display:flex;flex-direction:column;gap:10px;width:100%;}
+.confirm-yes{width:100%;padding:16px;background:transparent;border:1px solid var(--pink);border-radius:8px;color:var(--pink);font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;cursor:pointer;}
+.confirm-no{width:100%;padding:16px;background:transparent;border:1px solid var(--rule);border-radius:8px;color:var(--w50);font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;cursor:pointer;}
+
+
+#new-weight-toast,#prog-toast{position:fixed;left:20px;right:20px;border-radius:8px;padding:12px 16px;font-size:12px;color:var(--white);z-index:300;pointer-events:none;opacity:0;transition:all 0.3s;}
+#new-weight-toast{top:80px;background:var(--bg3);border:1px solid var(--orange);transform:translateY(-6px);}
+#new-weight-toast.show{opacity:1;transform:translateY(0);}
+#prog-toast{bottom:90px;background:var(--bg3);border:1px solid var(--pink);transform:translateY(6px);}
+#prog-toast.show{opacity:1;transform:translateY(0);}
+.toast-lbl{font-size:9px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;margin-bottom:3px;}
+#new-weight-toast .toast-lbl{color:var(--orange);}
+#prog-toast .toast-lbl{color:var(--pink);}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- HEADER -->
+  <div id="header">
+    <img id="logo-img" src="lmq-icon.png" alt="LMQ"
+      onerror="this.style.display='none';document.getElementById('logo-fallback').style.display='block';">
+    <div id="logo-fallback" style="display:none;">LMQ</div>
+    <div id="workout-label">Summer Workout <span id="wcount-display">1</span> of 32</div>
+    <button id="user-btn" onclick="showUserOverlay()"></button>
+  </div>
+
+  <!-- SCROLLABLE BODY (workout days) -->
+  <div id="body">
+    <div id="focus-bar">
+      <div id="focus-label">Today's Focus</div>
+      <div id="focus-text"></div>
+    </div>
+    <div id="ex-list"></div>
+    <div id="cycle-controls" style="display:flex;justify-content:center;gap:24px;padding:20px 0 4px;">
+      <button onclick="askSkipDay()" style="font-size:9px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--w25);background:transparent;border:none;cursor:pointer;">Skip Today</button>
+      <button onclick="askResetToDay1()" style="font-size:9px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--w25);background:transparent;border:none;cursor:pointer;">Reset to Day 1</button>
+    </div>
+    <div id="scroll-spacer"></div>
+  </div>
+
+  <!-- REST / SPECIAL DAY SCREEN -->
+  <div id="day-screen">
+    <div id="day-icon"></div>
+    <div id="day-type"></div>
+    <div id="day-title"></div>
+    <div id="day-idea"></div>
+    <div class="day-skip-row">
+      <button class="day-action-btn day-skip" onclick="askSkipDay()">Skip Today</button>
+      <button class="day-action-btn day-reset" onclick="askResetToDay1()">Reset to Day 1</button>
+    </div>
+  </div>
+
+  <!-- BOTTOM BAR -->
+  <div id="bottombar">
+    <button class="bar-btn" onclick="showProgressOverlay()">Progress</button>
+    <button class="bar-btn" onclick="showStyleOverlay()">Style</button>
+  </div>
+
+</div>
+
+<!-- REST TIMER OVERLAY -->
+<div class="overlay" id="rest-overlay">
+  <div id="rest-label">Rest</div>
+  <div id="rest-num">45</div>
+  <div id="rest-next"></div>
+  <div id="rest-ready"></div>
+  <button id="rest-skip" onclick="skipRest()">Skip Rest</button>
+</div>
+
+<!-- USER OVERLAY -->
+<div class="overlay" id="user-overlay">
+  <button class="user-name-btn" id="u-bianca" onclick="switchUser('bianca')">Bianca</button>
+  <div class="user-divider"></div>
+  <button class="user-name-btn" id="u-rita" onclick="switchUser('rita')">Rita</button>
+  <button id="user-dismiss" onclick="hideUserOverlay()">Cancel</button>
+</div>
+
+<!-- SETUP OVERLAY (first time — pick start date + workout type) -->
+<div class="overlay" id="setup-overlay">
+  <div id="setup-name"></div>
+  <div id="setup-title">Let's get started.</div>
+  <div id="setup-sub">Which workout are you doing today?</div>
+  <button class="setup-choice" onclick="pickWorkout('A')">
+    <div class="setup-choice-title">Workout A — Lower + Full Body</div>
+    <div class="setup-choice-sub">Leg Press · Squats · Lunges · Kettlebell Swing · Push-Ups · Glute Bridge</div>
+  </button>
+  <button class="setup-choice" onclick="pickWorkout('B')">
+    <div class="setup-choice-title">Workout B — Upper + Pull</div>
+    <div class="setup-choice-sub">Lat Pulldown · Row · Face Pull · Arnold Press · Bicep Curl · Lateral Raise</div>
+  </button>
+  <button class="setup-choice" onclick="pickWorkout('rest')">
+    <div class="setup-choice-title">Rest Day</div>
+    <div class="setup-choice-sub">Starting tomorrow with Push</div>
+  </button>
+</div>
+
+<!-- DAY 7 PICKER OVERLAY -->
+<div class="overlay" id="day7-overlay">
+  <div id="day7-title">Day 7 — Your Choice</div>
+  <div id="day7-sub">What kind of Day 7 do you want each week?</div>
+  <button class="d7-btn" onclick="setDay7('adventure')">
+    <div class="d7-btn-title">Adventure Day</div>
+    <div class="d7-btn-sub">Get out and explore NYC</div>
+  </button>
+  <button class="d7-btn" onclick="setDay7('cardio')">
+    <div class="d7-btn-title">Cardio Day</div>
+    <div class="d7-btn-sub">Treadmill, bike, run, move</div>
+  </button>
+  <button class="d7-btn" onclick="setDay7('recovery')">
+    <div class="d7-btn-title">Active Recovery</div>
+    <div class="d7-btn-sub">Yoga, foam roll, stretch, breathe</div>
+  </button>
+  <button class="d7-btn" onclick="setDay7('wildcard')">
+    <div class="d7-btn-title">Wild Card</div>
+    <div class="d7-btn-sub">Surprise us</div>
+  </button>
+</div>
+
+<!-- STYLE OVERLAY -->
+<div class="overlay" id="style-overlay" onclick="styleOverlayTap(event)">
+  <div id="style-sheet">
+    <button id="style-close" onclick="hideStyleOverlay()">Close</button>
+    <div class="sty-label">Emoji</div>
+    <div class="sty-emoji-row" id="sty-emoji"></div>
+    <div class="sty-label">Color</div>
+    <div class="sty-color-row" id="sty-color"></div>
+    <div class="sty-label">Font</div>
+    <div class="sty-font-row" id="sty-font"></div>
+  </div>
+</div>
+
+<!-- PROGRESS OVERLAY -->
+<div class="overlay" id="progress-overlay" onclick="progressOverlayTap(event)">
+  <div id="progress-sheet">
+    <button id="progress-close" onclick="hideProgressOverlay()">Close</button>
+    <div id="progress-content"></div>
+  </div>
+</div>
+
+<!-- CONFIRM OVERLAY -->
+<div class="overlay" id="confirm-overlay">
+  <div id="confirm-title"></div>
+  <div id="confirm-sub"></div>
+  <div class="confirm-btn-row">
+    <button class="confirm-yes" id="confirm-yes-btn"></button>
+    <button class="confirm-no" onclick="hideConfirm()">Never mind</button>
+  </div>
+</div>
+
+<!-- TOASTS -->
+<div id="new-weight-toast"><div class="toast-lbl">Moving Up</div><div id="nw-msg"></div></div>
+<div id="prog-toast"><div class="toast-lbl">Level Up</div><div id="prog-msg"></div></div>
+
+<script>
+// ═══════════════════════════════════════════
+//  DATA
+// ═══════════════════════════════════════════
+
+const FOCUSES = [
+  "Form is the only number that matters right now.",
+  "Slow the descent — that's where the work lives.",
+  "Control the weight. Don't let it control you.",
+  "Every rep is a deposit in a long-term account.",
+  "Precision beats speed. Every single time.",
+  "You're not here to impress anyone. You're here to improve.",
+  "The discomfort you feel is adaptation happening.",
+  "Rest is part of the work — not a break from it.",
+  "Notice the muscle. Don't just move the weight.",
+  "Strength built slowly lasts a lifetime.",
+  "Consistency will always outrun intensity.",
+  "Your body is learning. Give it time.",
+  "Every rep you do today is building bone. This is your osteoporosis prevention plan.",
+  "Breathe out on the effort. In on the return.",
+  "Small increments compound into transformation.",
+  "You showed up. That's already the hardest part.",
+  "Joints and muscles adapt at different rates. Be patient.",
+  "Strong is a skill. Practice it deliberately.",
+  "Feel the muscle contract. That's the point.",
+  "Your future self will thank this version of you.",
+  "Strength training is the single most effective thing you can do for lifelong bone density.",
+  "Strength is confidence you can carry everywhere.",
+  "No ego in this room. Just work.",
+  "One more rep is always possible.",
+  "Today's effort is tomorrow's baseline.",
+  "You are more capable than you currently believe.",
+  "Progress is quiet. It accumulates.",
+  "Weight-bearing exercise builds bone. You're doing it right now.",
+  "Mind the muscle, not the mirror.",
+  "You belong here. Exactly as you are.",
+  "The bones you build today are the independence you keep at 80.",
+  "Recovery is when strength — and bone — is actually built.",
+  "Strong muscles protect strong bones. Both are happening right now."
+];
+
+const REST_IDEAS = [
+  "10 minutes of gentle full-body stretching.",
+  "Foam roll your legs and back — 15 minutes.",
+  "Epsom salt bath — 20 minutes minimum.",
+  "A 15-minute yoga flow. Even short counts.",
+  "5 minutes of deep breathing or box breathing.",
+  "Light swimming or water walking.",
+  "Hydrate intentionally — aim for 8 glasses today.",
+  "Sleep an extra hour. Muscles grow at rest.",
+  "Take the stairs everywhere today.",
+  "Roll out your feet with a tennis ball.",
+  "10 deep hip flexor stretches per side.",
+  "Get outside for 20 minutes of sunlight.",
+  "Do nothing. Seriously. Rest is the work.",
+  "Gentle mobility — hips, shoulders, ankles.",
+  "Stretch while watching something good tonight.",
+  "A 30-minute walk after dinner.",
+  "20 minutes of light pilates or core breathing.",
+  "Write down three things your body did well this week.",
+  "Go to bed 30 minutes earlier than usual.",
+  "A slow 20-minute walk with no destination."
+];
+
+const DAY7_IDEAS = {
+  adventure:[
+    "Explore a new neighborhood on foot — no map, just wander.",
+    "Ride to the Intrepid. Walk the flight deck.",
+    "Walk to Little Island. Find a bench. Stay a while.",
+    "Walk to The Getty. Grab a coffee and watch the Hudson.",
+    "South Street Seaport — find something delicious.",
+    "Free kayak on the Hudson. Book it the night before."
+  ],
+  cardio:[
+    "30 minutes on the treadmill — easy, conversational pace.",
+    "Bike the Hudson River Greenway. Go as far as you want.",
+    "Elliptical intervals — 20 minutes, push every other minute.",
+    "Jump rope 15 minutes. More fun than it sounds.",
+    "Run the Central Park loop — all of it or as much as you want.",
+    "Dance cardio — 30 minutes, your living room, no judgment."
+  ],
+  recovery:[
+    "30-minute yoga flow. YouTube has great free ones.",
+    "Foam roll full body — legs, back, shoulders, 20 minutes.",
+    "Long slow walk with a podcast you've been putting off.",
+    "Full mobility circuit — hips, shoulders, ankles, thoracic.",
+    "Stretch while watching something. Make it a ritual.",
+    "Epsom salt bath and early bed. This is the work."
+  ],
+  wildcard:[
+    "Bike a loop in Central Park. Morning light, no agenda.",
+    "Read a book for an hour in Wagner Park. Leave the phone.",
+    "Invite a friend for coffee or tea. Connection is recovery.",
+    "Do 5 cartwheels. Yes, really. Find a patch of grass.",
+    "Do 10 Lulu curls. You know what those are.",
+    "Spot 5 of these on a walk: Police horse · Tourist in 9/11 hat · Frenchie · Halal cart · Georgetown shirt · Rollerskater · Graffiti."
+  ]
+};
+
+// Cycle: 0=Push, 1=Pull, 2=Rest, 3=Push, 4=Pull, 5=Rest, 6=Day7
+const CYCLE = ['A','B','rest','A','B','rest','day7'];
+
+const WORKOUTS = {
+  A:{ name:'Workout A', sub:'Lower Body + Full Body', exercises:[
+    {name:'Leg Press',        sets:3, dw:100,  note:'Drive through heels, full depth — builds hip bone density'},
+    {name:'Goblet Squat',     sets:3, dw:15,   note:'Chest tall, control the descent'},
+    {name:'Walking Lunges',   sets:3, dw:'BW', note:'Step long, drive through front heel, squeeze glute'},
+    {name:'Kettlebell Swing', sets:3, dw:15,   note:'Hinge at hips, drive with glutes — not a squat'},
+    {name:'Push-Ups',         sets:3, dw:'BW', note:'Start on knees if needed — chest to floor, core tight'},
+    {name:'Glute Bridge',     sets:3, dw:'BW', note:'Squeeze hard at the top, hold 1 second'}
+  ]},
+  B:{ name:'Workout B', sub:'Upper Body + Pull', exercises:[
+    {name:'Lat Pulldown',     sets:3, dw:60,   note:'Pull to chest, control the return — builds pull-up strength'},
+    {name:'Seated Row',       sets:3, dw:65,   note:'Squeeze shoulder blades together, tall posture'},
+    {name:'Cable Face Pull',  sets:3, dw:25,   note:'Elbows high, pull to forehead — posture game changer'},
+    {name:'Arnold Press',     sets:3, dw:10,   note:'Rotate through full range — hits all three shoulder heads'},
+    {name:'Cable Bicep Curl', sets:3, dw:25,   note:'No swinging, full extension down'},
+    {name:'Lateral Raise',    sets:3, dw:8,    note:'Lead with elbows, control it down — shoulder shape'}
+  ]}
+};
+
+const EMOJIS=[
+  {k:'fire',e:'🔥'},{k:'bicep',e:'💪'},{k:'crown',e:'👑'},
+  {k:'diamond',e:'💎'},{k:'rose',e:'🌹'},{k:'dancer',e:'💃'},{k:'kiss',e:'💋'}
+];
+
+const ACCENTS=[
+  {k:'hotpink',name:'Skinny Bitch', p:'#e91e8c',o:'#ff6b35',bg:'#2e3440',bg2:'#353c4a',bg3:'#3d4555'},
+  {k:'coral',  name:'Leading Lady', p:'#ff4d6d',o:'#ff8c42',bg:'#2e3440',bg2:'#353c4a',bg3:'#3d4555'},
+  {k:'rose',   name:"80s Rockstar", p:'#c2185b',o:'#e91e8c',bg:'#2e3440',bg2:'#353c4a',bg3:'#3d4555'},
+  {k:'gold',   name:'Kick Ass',     p:'#c9a84c',o:'#e8824a',bg:'#2e3440',bg2:'#353c4a',bg3:'#3d4555'},
+  {k:'sage',   name:'Nature Girl',  p:'#5a9a7a',o:'#7ab89a',bg:'#2e3440',bg2:'#353c4a',bg3:'#3d4555'},
+  {k:'classic',name:'Upper East Side', p:'#9d9d9d',o:'#c8c8c8',bg:'#12151e',bg2:'#1e2130',bg3:'#252838'}
+];
+
+const FONTS=[
+  {k:'cormorant',name:'Cormorant',f:"'Cormorant Garamond',serif"},
+  {k:'inter',    name:'Inter',    f:"'Inter',sans-serif"},
+  {k:'mono',     name:'Mono',     f:"'Space Mono',monospace",url:'https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap'},
+  {k:'orbitron', name:'Orbit',    f:"'Orbitron',sans-serif", url:'https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap'},
+  {k:'bebas',    name:'Bebas',    f:"'Bebas Neue',sans-serif",url:'https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap'}
+];
+
+// ═══════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════
+
+let S = {
+  user: 'bianca',
+  // Per-user: cycleDay (0-6), workoutCount, focusIdx, weights, history, prefs
+  // cycleDay advances on each completed workout or skip
+  bianca: {
+    cycleDay: null,       // null = not started
+    day7type: null,       // null = not chosen yet
+    restIdeaIdx: 0,
+    day7IdeaIdx: 0,
+    workoutCount: 0,
+    focusIdx: 0,
+    exIdx: 0,
+    setIdx: 0,
+    weights: {},
+    history: {},
+    prefs: {emoji:'fire', accent:'hotpink', font:'cormorant'}
+  },
+  rita: {
+    cycleDay: null,
+    day7type: null,
+    restIdeaIdx: 0,
+    day7IdeaIdx: 0,
+    workoutCount: 0,
+    focusIdx: 0,
+    exIdx: 0,
+    setIdx: 0,
+    weights: {},
+    history: {},
+    prefs: {emoji:'crown', accent:'rose', font:'cormorant'}
+  }
+};
+
+let restInterval = null;
+let restTime = 45;
+let audioCtx = null;
+let toastTimers = {};
+
+// ═══════════════════════════════════════════
+//  PERSISTENCE
+// ═══════════════════════════════════════════
+
+function save() {
+  try { localStorage.setItem('lmq4', JSON.stringify(S)); } catch(e){}
+}
+
+function load() {
+  try {
+    const d = JSON.parse(localStorage.getItem('lmq4'));
+    if (d) {
+      // Merge carefully to preserve defaults for new fields
+      if (d.user) S.user = d.user;
+      ['bianca','rita'].forEach(n => {
+        if (d[n]) S[n] = Object.assign({}, S[n], d[n]);
+      });
+    }
+  } catch(e){}
+}
+
+// ═══════════════════════════════════════════
+//  SHORTCUTS
+// ═══════════════════════════════════════════
+
+function me()      { return S[S.user]; }
+function pr()      { return me().prefs; }
+function cycleDay(){ return me().cycleDay; }
+function dayType() { return cycleDay() === null ? null : CYCLE[cycleDay() % 7]; }
+function isWorkoutDay() { return dayType()==='A' || dayType()==='B'; }
+function isRestDay()    { return dayType()==='rest'; }
+function isDay7()       { return dayType()==='day7'; }
+
+function getAccent()  { return (ACCENTS.find(a=>a.k===pr().accent)||ACCENTS[0]); }
+function getFont()    { return (FONTS.find(f=>f.k===pr().font)||FONTS[0]); }
+function getEmoji()   { return (EMOJIS.find(e=>e.k===pr().emoji)||EMOJIS[0]).e; }
+
+function getWeight(name) {
+  const w = me().weights[name];
+  const wo = WORKOUTS[dayType()];
+  if (w !== undefined) return w;
+  if (wo) { const ex = wo.exercises.find(e=>e.name===name); if(ex) return ex.dw; }
+  return 0;
+}
+
+function currentExercise() {
+  if (!isWorkoutDay()) return null;
+  return WORKOUTS[dayType()].exercises[me().exIdx];
+}
+
+// ═══════════════════════════════════════════
+//  THEME
+// ═══════════════════════════════════════════
+
+function applyTheme() {
+  const ac = getAccent();
+  const r=(h,s,e)=>parseInt(h.slice(s,e),16);
+  const p=ac.p;
+  document.documentElement.style.setProperty('--pink', p);
+  document.documentElement.style.setProperty('--pink-dim',`rgba(${r(p,1,3)},${r(p,3,5)},${r(p,5,7)},0.15)`);
+  document.documentElement.style.setProperty('--orange', ac.o);
+  document.documentElement.style.setProperty('--bg',  ac.bg);
+  document.documentElement.style.setProperty('--bg2', ac.bg2);
+  document.documentElement.style.setProperty('--bg3', ac.bg3);
+  document.body.style.background = ac.bg;
+}
+
+// ═══════════════════════════════════════════
+//  AUDIO
+// ═══════════════════════════════════════════
+
+function chime() {
+  if ('vibrate' in navigator) navigator.vibrate([50,30,50]);
+  try {
+    if (!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+    const now = audioCtx.currentTime;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.connect(gain); gain.connect(audioCtx.destination);
+    osc.frequency.setValueAtTime(523, now);
+    osc.frequency.exponentialRampToValueAtTime(1046, now+0.2);
+    gain.gain.setValueAtTime(0.18, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now+0.3);
+    osc.start(now); osc.stop(now+0.35);
+  } catch(e){}
+}
+
+// ═══════════════════════════════════════════
+//  RENDER
+// ═══════════════════════════════════════════
+
+function render() {
+  applyTheme();
+
+  // Header
+  document.getElementById('wcount-display').textContent = me().workoutCount + 1;
+  document.getElementById('user-btn').textContent = S.user.charAt(0).toUpperCase()+S.user.slice(1);
+
+  // Focus text (always update even if hidden)
+  document.getElementById('focus-text').textContent = FOCUSES[me().focusIdx % FOCUSES.length];
+
+  // Not started yet
+  if (cycleDay() === null) {
+    showSetupOverlay();
+    return;
+  }
+
+  hideSetupOverlay();
+
+  // Day 7 type not chosen yet
+  if (isDay7() && !me().day7type) {
+    document.getElementById('day7-overlay').classList.add('show');
+    return;
+  }
+  document.getElementById('day7-overlay').classList.remove('show');
+
+  if (isWorkoutDay()) {
+    showWorkoutUI();
+  } else {
+    showDayScreen();
+  }
+}
+
+function showWorkoutUI() {
+  document.getElementById('body').style.display = 'flex';
+  document.getElementById('body').style.flexDirection = 'column';
+  document.getElementById('day-screen').classList.remove('show');
+  renderExerciseList();
+}
+
+function showDayScreen() {
+  document.getElementById('body').style.display = 'none';
+  const ds = document.getElementById('day-screen');
+  ds.classList.add('show');
+
+  if (isRestDay()) {
+    const idx = me().restIdeaIdx % REST_IDEAS.length;
+    document.getElementById('day-icon').textContent = '🌿';
+    document.getElementById('day-type').textContent = 'Rest Day';
+    document.getElementById('day-title').textContent = 'Recover well.';
+    document.getElementById('day-idea').textContent = REST_IDEAS[idx];
+  } else if (isDay7()) {
+    const t = me().day7type;
+    const idx = me().day7IdeaIdx % DAY7_IDEAS[t].length;
+    const icons = {adventure:'🗺️', cardio:'⚡', recovery:'🧘', wildcard:'🎲'};
+    const labels = {adventure:'Adventure Day', cardio:'Cardio Day', recovery:'Active Recovery', wildcard:'Wild Card'};
+    document.getElementById('day-icon').textContent = icons[t];
+    document.getElementById('day-type').textContent = labels[t];
+    document.getElementById('day-title').textContent = 'Today\'s move.';
+    document.getElementById('day-idea').textContent = DAY7_IDEAS[t][idx];
+  }
+}
+
+function renderExerciseList() {
+  const list = document.getElementById('ex-list');
+  list.innerHTML = '';
+  const wt = dayType();
+  const exercises = WORKOUTS[wt].exercises;
+  const myExIdx = me().exIdx;
+  const mySetIdx = me().setIdx;
+
+  exercises.forEach((e, i) => {
+    const isDone   = i < myExIdx;
+    const isActive = i === myExIdx;
+
+    const card = document.createElement('div');
+    card.className = 'ex-card' + (isDone?' done':(isActive?' active':''));
+
+    // Card header
+    const hdr = document.createElement('div');
+    hdr.className = 'ex-card-header';
+
+    const num = document.createElement('div');
+    num.className = 'ex-number';
+    num.textContent = String(i+1).padStart(2,'0');
+
+    const nameBlock = document.createElement('div');
+    nameBlock.className = 'ex-name-block';
+
+    const nm = document.createElement('div');
+    nm.className = 'ex-name';
+    nm.style.fontFamily = getFont().f;
+    nm.textContent = e.name;
+
+    const note = document.createElement('div');
+    note.className = 'ex-note';
+    note.textContent = e.note;
+
+    nameBlock.appendChild(nm);
+    nameBlock.appendChild(note);
+
+    const status = document.createElement('div');
+    status.className = 'ex-status';
+    status.textContent = isDone ? '🔥' : '';
+
+    hdr.appendChild(num);
+    hdr.appendChild(nameBlock);
+    hdr.appendChild(status);
+    card.appendChild(hdr);
+
+    // Active body
+    if (isActive) {
+      const body = document.createElement('div');
+      body.className = 'ex-body';
+
+      // Set pips
+      const pipRow = document.createElement('div');
+      pipRow.className = 'set-progress';
+      for (let s = 0; s < e.sets; s++) {
+        const pip = document.createElement('div');
+        pip.className = 'set-pip'+(s<mySetIdx?' done':(s===mySetIdx?' active':''));
+        pipRow.appendChild(pip);
+      }
+      body.appendChild(pipRow);
+
+      // Set label
+      const setLbl = document.createElement('div');
+      setLbl.className = 'set-label';
+      const isLast = mySetIdx === e.sets - 1;
+      setLbl.innerHTML = isLast
+        ? `Set <span>${mySetIdx+1} of ${e.sets}</span> — Last one`
+        : `Set <span>${mySetIdx+1} of ${e.sets}</span>`;
+      body.appendChild(setLbl);
+
+      // Inputs
+      const inputsRow = document.createElement('div');
+      inputsRow.className = 'inputs-row';
+
+      const wBlock = document.createElement('div');
+      wBlock.className = 'input-block';
+      wBlock.innerHTML = `<div class="input-lbl">Weight · lbs</div>
+        <input class="input-num" id="w-input" type="number" inputmode="decimal"
+          value="${getWeight(e.name)}" onchange="updateWeight(this.value)">`;
+
+      const rBlock = document.createElement('div');
+      rBlock.className = 'input-block';
+      rBlock.innerHTML = `<div class="input-lbl">Reps</div>
+        <input class="input-num" id="r-input" type="number" inputmode="numeric"
+          placeholder="—" onkeydown="if(event.key==='Enter')nailedit()">`;
+
+      inputsRow.appendChild(wBlock);
+      inputsRow.appendChild(rBlock);
+      body.appendChild(inputsRow);
+
+      // Button
+      const btn = document.createElement('button');
+      btn.className = 'nailed-btn';
+      btn.textContent = isLast ? 'Nailed It' : 'Log It';
+      btn.onclick = nailedit;
+      body.appendChild(btn);
+
+      card.appendChild(body);
+
+      setTimeout(() => card.scrollIntoView({behavior:'smooth', block:'nearest'}), 100);
+    }
+
+    list.appendChild(card);
+  });
+}
+
+// ═══════════════════════════════════════════
+//  ACTIONS
+// ═══════════════════════════════════════════
+
+function updateWeight(val) {
+  const w = parseFloat(val);
+  const ex = currentExercise();
+  if (!isNaN(w) && ex) {
+    me().weights[ex.name] = w;
+    save();
+  }
+}
+
+function nailedit() {
+  const rInput = document.getElementById('r-input');
+  const reps = parseInt(rInput ? rInput.value : 0);
+  if (!reps || reps < 1) {
+    if (rInput) { rInput.focus(); rInput.style.color = 'var(--pink)'; }
+    return;
+  }
+
+  const ex = currentExercise();
+  const name = ex.name;
+  const weight = getWeight(name);
+  const hist = me().history[name] || [];
+  const lastEntry = hist[hist.length-1];
+  const isNewWeight = hist.length > 0 && lastEntry && lastEntry.weight !== weight;
+
+  hist.push({weight, reps, date: new Date().toISOString()});
+  me().history[name] = hist;
+
+  // New weight toast
+  if (isNewWeight && me().setIdx === 0) {
+    showToast('new-weight-toast','nw-msg',`${getEmoji()} ${name} — moving up to ${weight} lbs`);
+  }
+
+  // Progression check — 3 consecutive sets at same weight hitting 15+ reps
+  const recent = hist.slice(-3);
+  if (recent.length===3 && recent.every(s=>s.weight===weight&&s.reps>=15)) {
+    const inc = (typeof weight==='number') ? (weight<=20?5:(weight<=50?10:5)) : 0;
+    if (inc > 0) {
+      setTimeout(()=>showToast('prog-toast','prog-msg',
+        `${name} — ready to move to ${weight+inc} lbs`), 600);
+    }
+  }
+
+  save();
+
+  const lastSet = me().setIdx >= ex.sets - 1;
+  const lastEx  = me().exIdx >= WORKOUTS[dayType()].exercises.length - 1;
+
+  if (!lastSet) {
+    me().setIdx++;
+    save();
+    showRest(`Set ${me().setIdx+1} of ${ex.sets}`);
+  } else if (!lastEx) {
+    me().exIdx++;
+    me().setIdx = 0;
+    save();
+    showRest(`Next: ${WORKOUTS[dayType()].exercises[me().exIdx].name}`, true);
+  } else {
+    // Workout complete
+    me().workoutCount++;
+    me().focusIdx = (me().focusIdx + 1) % FOCUSES.length;
+    me().cycleDay = (me().cycleDay + 1);
+    me().exIdx = 0;
+    me().setIdx = 0;
+    save();
+    showRest('Workout done. See you next time.', true);
+  }
+}
+
+function skipDay() {
+  me().cycleDay = (me().cycleDay || 0) + 1;
+  if (isRestDay() || isDay7()) {
+    me().restIdeaIdx = (me().restIdeaIdx + 1);
+    me().day7IdeaIdx = (me().day7IdeaIdx + 1);
+  }
+  save();
+  render();
+}
+
+function resetToDay1() {
+  me().cycleDay = 0;
+  me().exIdx = 0;
+  me().setIdx = 0;
+  save();
+  render();
+}
+
+// ═══════════════════════════════════════════
+//  REST TIMER
+// ═══════════════════════════════════════════
+
+function showRest(label, betweenEx) {
+  clearInterval(restInterval);
+  restTime = betweenEx ? 60 : 45;
+  chime();
+
+  const numEl   = document.getElementById('rest-num');
+  const nextEl  = document.getElementById('rest-next');
+  const readyEl = document.getElementById('rest-ready');
+  nextEl.textContent  = label;
+  readyEl.textContent = '';
+
+  function tick() {
+    numEl.textContent  = restTime;
+    numEl.className    = restTime <= 10 ? 'urgent' : '';
+    readyEl.textContent = restTime <= 5 ? 'Get Ready' : '';
+    if (restTime <= 0) {
+      clearInterval(restInterval);
+      chime();
+      hideRest();
+      return;
+    }
+    restTime--;
+  }
+  tick();
+  document.getElementById('rest-overlay').classList.add('show');
+  restInterval = setInterval(tick, 1000);
+}
+
+function skipRest() {
+  clearInterval(restInterval);
+  hideRest();
+}
+
+function hideRest() {
+  document.getElementById('rest-overlay').classList.remove('show');
+  render();
+}
+
+// ═══════════════════════════════════════════
+//  SETUP
+// ═══════════════════════════════════════════
+
+function showSetupOverlay() {
+  document.getElementById('setup-name').textContent =
+    S.user.charAt(0).toUpperCase()+S.user.slice(1);
+  document.getElementById('setup-overlay').classList.add('show');
+}
+
+function hideSetupOverlay() {
+  document.getElementById('setup-overlay').classList.remove('show');
+}
+
+function pickWorkout(type) {
+  // type is 'A', 'B', or 'rest'
+  // Set cycleDay so CYCLE[cycleDay % 7] === type
+  if (type === 'A')    me().cycleDay = 0;
+  if (type === 'B')    me().cycleDay = 1;
+  if (type === 'rest') me().cycleDay = 2;
+  me().exIdx = 0;
+  me().setIdx = 0;
+  save();
+  hideSetupOverlay();
+  render();
+}
+
+// ═══════════════════════════════════════════
+//  DAY 7
+// ═══════════════════════════════════════════
+
+function setDay7(type) {
+  me().day7type = type;
+  save();
+  document.getElementById('day7-overlay').classList.remove('show');
+  render();
+}
+
+// ═══════════════════════════════════════════
+//  USER OVERLAY
+// ═══════════════════════════════════════════
+
+function showUserOverlay() {
+  document.getElementById('u-bianca').className =
+    'user-name-btn'+(S.user==='bianca'?' active':'');
+  document.getElementById('u-rita').className =
+    'user-name-btn'+(S.user==='rita'?' active':'');
+  document.getElementById('user-overlay').classList.add('show');
+}
+
+function hideUserOverlay() {
+  document.getElementById('user-overlay').classList.remove('show');
+}
+
+function switchUser(name) {
+  S.user = name;
+  save();
+  hideUserOverlay();
+  render();
+}
+
+// ═══════════════════════════════════════════
+//  STYLE OVERLAY
+// ═══════════════════════════════════════════
+
+function showStyleOverlay() {
+  renderStylePicker();
+  document.getElementById('style-overlay').classList.add('show');
+}
+
+function hideStyleOverlay() {
+  document.getElementById('style-overlay').classList.remove('show');
+}
+
+function styleOverlayTap(e) {
+  if (e.target === document.getElementById('style-overlay')) hideStyleOverlay();
+}
+
+function renderStylePicker() {
+  // Emoji
+  const er = document.getElementById('sty-emoji');
+  er.innerHTML = '';
+  EMOJIS.forEach(em => {
+    const b = document.createElement('button');
+    b.className = 'sty-em'+(pr().emoji===em.k?' sel':'');
+    b.textContent = em.e;
+    b.onclick = ()=>{ pr().emoji=em.k; save(); renderStylePicker(); };
+    er.appendChild(b);
+  });
+
+  // Colors
+  const cr = document.getElementById('sty-color');
+  cr.innerHTML = '';
+  ACCENTS.forEach(ac => {
+    const b = document.createElement('button');
+    b.className = 'sty-col'+(pr().accent===ac.k?' sel':'');
+    b.textContent = ac.name;
+    b.style.cssText += `border-left:3px solid ${ac.p};`;
+    b.onclick = ()=>{ pr().accent=ac.k; save(); applyTheme(); renderStylePicker(); };
+    cr.appendChild(b);
+  });
+
+  // Fonts
+  const fr = document.getElementById('sty-font');
+  fr.innerHTML = '';
+  FONTS.forEach(ft => {
+    const b = document.createElement('button');
+    b.className = 'sty-font'+(pr().font===ft.k?' sel':'');
+    b.textContent = ft.name;
+    b.style.fontFamily = ft.f;
+    b.onclick = ()=>{
+      pr().font=ft.k; save();
+      if (ft.url && !document.querySelector(`link[data-fk="${ft.k}"]`)) {
+        const lk=document.createElement('link');
+        lk.rel='stylesheet'; lk.href=ft.url; lk.dataset.fk=ft.k;
+        document.head.appendChild(lk);
+      }
+      applyTheme(); renderStylePicker();
+    };
+    fr.appendChild(b);
+  });
+}
+
+// ═══════════════════════════════════════════
+//  PROGRESS OVERLAY
+// ═══════════════════════════════════════════
+
+function showProgressOverlay() {
+  renderProgress();
+  document.getElementById('progress-overlay').classList.add('show');
+}
+
+function hideProgressOverlay() {
+  document.getElementById('progress-overlay').classList.remove('show');
+}
+
+function progressOverlayTap(e) {
+  if (e.target === document.getElementById('progress-overlay')) hideProgressOverlay();
+}
+
+function renderProgress() {
+  const el = document.getElementById('progress-content');
+  const wc = me().workoutCount;
+  const cd = me().cycleDay || 0;
+  const dayInWeek = (cd % 7) + 1;
+  const weekNum = Math.floor(cd / 7) + 1;
+
+  // Build all exercises from both workouts
+  const allEx = [...WORKOUTS.A.exercises, ...WORKOUTS.B.exercises];
+
+  let html = `
+    <div class="prog-section-label">Overall</div>
+    <div class="prog-stat-row">
+      <div class="prog-stat">
+        <div class="prog-stat-num">${wc}</div>
+        <div class="prog-stat-lbl">Workouts Done</div>
+      </div>
+      <div class="prog-stat">
+        <div class="prog-stat-num">${32-wc}</div>
+        <div class="prog-stat-lbl">Remaining</div>
+      </div>
+      <div class="prog-stat">
+        <div class="prog-stat-num">${weekNum}</div>
+        <div class="prog-stat-lbl">Week</div>
+      </div>
+    </div>
+
+    <div class="prog-section-label">This Week — Day ${dayInWeek} of 7</div>
+    <div class="prog-day-row">
+      ${CYCLE.map((_,i)=>{
+        const pos = cd % 7;
+        const cls = i < pos ? 'done' : (i===pos ? 'today' : '');
+        return `<div class="prog-day-pip ${cls}" title="${['Push','Pull','Rest','Push','Pull','Rest','Day 7'][i]}"></div>`;
+      }).join('')}
+    </div>
+
+    <div class="prog-section-label">Exercise Progress</div>
+  `;
+
+  allEx.forEach(e => {
+    const hist = me().history[e.name] || [];
+    const currentWeight = me().weights[e.name] !== undefined ? me().weights[e.name] : e.dw;
+    const sets = e.sets;
+
+    // Find most recent reps at current weight
+    const recentAtWeight = hist.filter(h=>h.weight===currentWeight).slice(-sets);
+    const avgReps = recentAtWeight.length > 0
+      ? Math.round(recentAtWeight.reduce((a,b)=>a+b.reps,0)/recentAtWeight.length)
+      : 12;
+
+    const displayWeight = typeof currentWeight === 'number' ? `${currentWeight} lbs` : currentWeight;
+    const currentStatus = `${sets}×${avgReps} @ ${displayWeight}`;
+
+    // Next goal
+    let nextLine = '';
+    if (typeof currentWeight === 'number') {
+      const inc = currentWeight<=20?5:(currentWeight<=50?10:5);
+      const readyToProgress = recentAtWeight.length >= sets && recentAtWeight.every(s=>s.reps>=15);
+      if (readyToProgress) {
+        nextLine = `<div class="prog-ex-ready">Ready to move up → ${currentWeight+inc} lbs</div>`;
+      } else {
+        const repsNeeded = 15;
+        nextLine = `<div class="prog-ex-next">Next goal: ${sets}×${repsNeeded} @ ${displayWeight}</div>`;
+      }
+    }
+
+    html += `
+      <div class="prog-ex-row">
+        <div class="prog-ex-name">${e.name}</div>
+        <div class="prog-ex-current">Current: ${currentStatus}</div>
+        ${nextLine}
+      </div>
+    `;
+  });
+
+  el.innerHTML = html;
+}
+
+// ═══════════════════════════════════════════
+//  CONFIRM OVERLAY
+// ═══════════════════════════════════════════
+
+let confirmCallback = null;
+
+function showConfirm(title, sub, yesLabel, cb) {
+  document.getElementById('confirm-title').textContent = title;
+  document.getElementById('confirm-sub').textContent = sub;
+  document.getElementById('confirm-yes-btn').textContent = yesLabel;
+  confirmCallback = cb;
+  document.getElementById('confirm-overlay').classList.add('show');
+}
+
+function hideConfirm() {
+  document.getElementById('confirm-overlay').classList.remove('show');
+  confirmCallback = null;
+}
+
+function confirmYes() {
+  hideConfirm();
+  if (confirmCallback) confirmCallback();
+}
+
+// Wire confirm-yes button
+document.getElementById('confirm-yes-btn').onclick = confirmYes;
+
+function askSkipDay() {
+  showConfirm(
+    'Skip today?',
+    'This moves you to the next day in your cycle. Your workout history stays intact.',
+    'Yes, skip today',
+    () => { skipDay(); }
+  );
+}
+
+function askResetToDay1() {
+  showConfirm(
+    'Reset to Day 1?',
+    'This restarts your Push/Pull cycle from the beginning. All your logged weights and history are kept.',
+    'Yes, reset cycle',
+    () => { resetToDay1(); }
+  );
+}
+
+
+
+function showToast(toastId, msgId, msg) {
+  document.getElementById(msgId).textContent = msg;
+  const el = document.getElementById(toastId);
+  el.classList.add('show');
+  clearTimeout(toastTimers[toastId]);
+  toastTimers[toastId] = setTimeout(()=>el.classList.remove('show'), 4000);
+}
+
+// ═══════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════
+
+load();
+render();
+</script>
+</body>
+</html>
